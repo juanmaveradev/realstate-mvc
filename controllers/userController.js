@@ -26,7 +26,7 @@ const registerUser = async(req, res) => {
         return res.render('auth/register', {
             page: 'Register',
             errors: result.array()
-        }) 
+        })  
     }
 
     const user = await User.create(req.body)
