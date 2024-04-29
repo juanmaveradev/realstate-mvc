@@ -13,31 +13,54 @@ const formRegister = (req, res) => {
     }) 
 }
 
+const formForgetPass = (req, res) => {
+    res.render('auth/password-forgot', {
+        page: 'Recover your access to RealState'
+    }) 
+} 
+
+
 const registerUser = async(req, res) => {
-    //Validation
-    await check('name').notEmpty().withMessage('Name is required').run(req)
-    await check('email').isEmail().withMessage('Enter a valid Email').run(req)
-    await check('password').isLength({min: 7}).withMessage('Password must have minimun 7 characteres').run(req)
-    await check('r-password').equals('password').withMessage('The passwords are not the same').run(req)
+
+     await check('name').notEmpty().withMessage('Name is required').run(req)
+     await check('email').isEmail().withMessage('Enter a valid Email').run(req)
+     await check('password').isLength({min: 7}).withMessage('Password must have minimum 7 characteres').run(req)
+     await check('rPassword').equals('password').withMessage('The passwords are not the same').run(req)
 
     let result = validationResult(req)
 
     if(!result.isEmpty()) {
         return res.render('auth/register', {
             page: 'Register',
-            errors: result.array()
+            errors: result.array(),
+            user: {
+                name: req.body.name,
+                email: req.body.email
+            }
         })  
     }
 
-    const user = await User.create(req.body)
+    const { name, email, password } = req.body
 
+    const existUser = await User.findOne( { where: {email}})
+    if (existUser) {
+        return res.render('auth/register', {
+            page: 'Register',
+            errors: [{msg: 'The email already has a user'}],
+            user: {
+                name: req.body.name,
+                email: req.body.email
+            }
+        })  
+    }
+
+    await User.create ({
+        name,
+        email,
+        password,
+        token: 123
+    })
 }
-
-const formForgetPass = (req, res) => {
-    res.render('auth/password-forgot', {
-        page: 'Recover your access to RealState'
-    }) 
-} 
 
 
 export {
